@@ -58,6 +58,7 @@ This project is an IoT-based smart poultry farming system using ESP8266 (NodeMCU
 ## 📊 Firebase Integration
 
 Realtime data is stored in Firebase:
+![System]()
 
 ---
 
