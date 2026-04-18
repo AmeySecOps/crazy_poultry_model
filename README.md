@@ -78,6 +78,9 @@ Displays real-time sensor values for debugging.
 - AI-based prediction system
 
 ---
+## 📜 License
+This project is licensed under the MIT License.
+---
 
 ## 👨‍💻 Author
 Amey Jadhav
