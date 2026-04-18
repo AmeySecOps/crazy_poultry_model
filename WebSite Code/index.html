@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> Smart Poultry Farming Management System</title>
+  <meta name="description" content="Realtime poultry farm dashboard and management system powered by Firebase Realtime Database.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="loading-screen" id="loadingScreen"><div class="loading-shell"><span class="loading-ring"></span><div><p class="loading-kicker">Smart Farm Boot</p><h2>Connecting to Firebase</h2><p class="loading-copy">Waiting for <code>/Poultry</code> live data.</p></div></div></div>
+
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-mark"><i class="fa-solid fa-feather-pointed"></i></div>
+        <div><p class="brand-label">Smart Farm</p><h2>Poultry Controller</h2></div>
+        <button class="sidebar-close" id="sidebarClose" type="button" aria-label="Close navigation"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="sidebar-panel"><span class="panel-chip"><span class="live-dot"></span>Live IoT Monitoring</span><p>Realtime flock operations, automation logic, and farm records in one console.</p></div>
+      <nav class="sidebar-nav">
+        <a class="nav-link is-active" href="#" data-view-target="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+        <a class="nav-link" href="#" data-view-target="batches"><i class="fa-solid fa-egg"></i><span>Batches</span></a>
+        <a class="nav-link" href="#" data-view-target="feeding"><i class="fa-solid fa-bowl-food"></i><span>Feeding</span></a>
+        <a class="nav-link" href="#" data-view-target="health"><i class="fa-solid fa-heart-pulse"></i><span>Health</span></a>
+        <a class="nav-link" href="#" data-view-target="expenses"><i class="fa-solid fa-wallet"></i><span>Expenses</span></a>
+        <a class="nav-link" href="#" data-view-target="settings"><i class="fa-solid fa-sliders"></i><span>Settings</span></a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-foot-card"><p>Automation Health</p><strong id="sidebarFarmStatus">Waiting for device data</strong></div>
+        <button id="themeToggle" class="theme-toggle" type="button"><i class="fa-solid fa-moon"></i><span>Toggle theme</span></button>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <div class="main-shell">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="sidebarToggle" class="icon-button" type="button" aria-label="Open navigation"><i class="fa-solid fa-bars-staggered"></i></button>
+          <div><p class="eyebrow">ESP8266 + Firebase Realtime Database</p><h1>Smart Poultry Farming Automation</h1></div>
+        </div>
+        <div class="topbar-right">
+          <div class="status-chip" id="dbConnectionChip"><span class="chip-dot"></span><span>Database: Connecting</span></div>
+          <div class="status-chip" id="authChip"><span class="chip-dot"></span><span>Session: Initializing</span></div>
+          <button id="themeToggleMobile" class="icon-button mobile-theme-toggle" type="button" aria-label="Toggle theme"><i class="fa-solid fa-circle-half-stroke"></i></button>
+        </div>
+      </header>
+
+      <main class="content-shell">
+        <section class="hero-card">
+          <div class="hero-copy">
+            <p class="eyebrow">Farm Operations Console</p>
+            <h2></h2>
+            <p>Sensor readings stream from Firebase at <code>"/Poultry"</code> while farm records stay synced in the same backend.</p>
+          </div>
+          <div class="hero-meta">
+            <article class="meta-card"><span>Last telemetry update</span><strong id="lastUpdated">Waiting for data</strong></article>
+            <article class="meta-card"><span>Current local time</span><strong id="currentTime">--</strong></article>
+            <article class="meta-card"><span>Total management records</span><strong id="recordCount">0</strong></article>
+          </div>
+        </section>
+
+        <section class="status-ribbon status-ribbon--loading" id="statusRibbon"><span class="ribbon-indicator"></span><div><strong id="statusHeadline">Connecting to Firebase services</strong><p id="statusMessage">Waiting for a live payload from the poultry node.</p></div></section>
+
+        <section class="view is-active" data-view="dashboard">
+          <div class="section-head"><div><p class="eyebrow">Live Monitoring</p><h3>Realtime Environment Dashboard</h3></div></div>
+          <div class="metrics-grid">
+            <article class="metric-card" id="tempCard"><div class="metric-icon metric-icon--temp"><i class="fa-solid fa-temperature-three-quarters"></i></div><div class="metric-content"><p>Temperature</p><h4 id="tempValue">--</h4><div class="metric-footer"><span class="metric-state neutral" id="tempStatus">Waiting</span><small id="tempMeta">Alert above 38C</small></div></div></article>
+            <article class="metric-card" id="lightCard"><div class="metric-icon metric-icon--light"><i class="fa-solid fa-lightbulb"></i></div><div class="metric-content"><p>Light Status</p><h4 id="lightValue">--</h4><div class="metric-footer"><span class="metric-state neutral" id="lightStatus">Waiting</span><small id="lightMeta">LDR sensor idle</small></div></div></article>
+            <article class="metric-card" id="gasCard"><div class="metric-icon metric-icon--gas"><i class="fa-solid fa-wind"></i></div><div class="metric-content"><p>Gas Level</p><h4 id="gasValue">--</h4><div class="metric-footer"><span class="metric-state neutral" id="gasStatus">Waiting</span><small id="gasMeta">MQ2 sensor idle</small></div></div></article>
+            <article class="metric-card" id="waterCard"><div class="metric-icon metric-icon--water"><i class="fa-solid fa-droplet"></i></div><div class="metric-content"><p>Water Level</p><h4 id="waterValue">--</h4><div class="metric-footer"><span class="metric-state neutral" id="waterStatus">Waiting</span><small id="waterMeta">Reservoir sensor idle</small></div></div></article>
+            <article class="metric-card" id="wifiCard"><div class="metric-icon metric-icon--wifi"><i class="fa-solid fa-wifi"></i></div><div class="metric-content"><p>WiFi Status</p><h4 id="wifiValue">--</h4><div class="metric-footer"><span class="metric-state neutral" id="wifiStatus">Waiting</span><small id="wifiMeta">ESP8266 link state</small></div></div></article>
+            <article class="metric-card" id="firebaseCard"><div class="metric-icon metric-icon--firebase"><i class="fa-solid fa-database"></i></div><div class="metric-content"><p>Firebase Sync</p><h4 id="firebaseValue">--</h4><div class="metric-footer"><span class="metric-state neutral" id="firebaseStatus">Waiting</span><small id="firebaseMeta">Cloud handoff status</small></div></div></article>
+          </div>
+
+          <div class="dashboard-columns">
+            <article class="card-panel alert-panel"><div class="card-head"><div><p class="eyebrow">Alert Engine</p><h3>Critical Warnings</h3></div><span class="panel-badge" id="alertCountBadge">0 Active</span></div><div class="alert-list" id="liveAlerts"><div class="empty-panel"><i class="fa-solid fa-shield-heart"></i><p>Live alerts will appear here when thresholds are crossed.</p></div></div></article>
+            <article class="card-panel quick-stats"><div class="card-head"><div><p class="eyebrow">Farm Snapshot</p><h3>Operational Summary</h3></div></div><div class="summary-grid"><div class="summary-tile"><span>Active Batches</span><strong id="summaryBatches">0</strong></div><div class="summary-tile"><span>Total Birds</span><strong id="summaryBirds">0</strong></div><div class="summary-tile"><span>Feed Today</span><strong id="summaryFeedToday">0 kg</strong></div><div class="summary-tile"><span>Profit/Loss</span><strong id="summaryProfit">Rs 0</strong></div></div></article>
+          </div>
+
+          <div class="chart-grid">
+            <article class="card-panel chart-panel"><div class="card-head"><div><p class="eyebrow">Live Trend</p><h3>Temperature Trend</h3></div><span class="panel-badge">Last 24 readings</span></div><div class="chart-wrap"><canvas id="tempChart"></canvas></div></article>
+            <article class="card-panel chart-panel"><div class="card-head"><div><p class="eyebrow">Live Trend</p><h3>Gas Trend</h3></div><span class="panel-badge">Last 24 readings</span></div><div class="chart-wrap"><canvas id="gasChart"></canvas></div></article>
+          </div>
+
+          <article class="card-panel automation-panel"><div class="card-head"><div><p class="eyebrow">Automation Logic</p><h3>Device Action Status</h3></div><span class="panel-badge">Derived from live sensor values</span></div><div class="automation-grid">
+            <article class="automation-card" id="fanAutomation"><div><p>Fan / Relay</p><h4 id="fanStatus">OFF</h4></div><i class="fa-solid fa-fan"></i><small id="fanReason">Waiting for temperature data</small></article>
+            <article class="automation-card" id="bulbAutomation"><div><p>Bulb</p><h4 id="bulbStatus">OFF</h4></div><i class="fa-solid fa-lightbulb"></i><small id="bulbReason">Waiting for light data</small></article>
+            <article class="automation-card" id="pumpAutomation"><div><p>Water Pump</p><h4 id="pumpStatus">OFF</h4></div><i class="fa-solid fa-faucet-drip"></i><small id="pumpReason">Waiting for water sensor</small></article>
+            <article class="automation-card" id="alarmAutomation"><div><p>Alarm</p><h4 id="alarmStatus">IDLE</h4></div><i class="fa-solid fa-bell"></i><small id="alarmReason">Waiting for gas reading</small></article>
+          </div></article>
+        </section>
+        <section class="view" data-view="batches">
+          <div class="section-head"><div><p class="eyebrow">Flock Lifecycle</p><h3>Batch Management</h3></div><button class="primary-button" type="button" data-open-modal="batchModal"><i class="fa-solid fa-plus"></i><span>Add Batch</span></button></div>
+          <div class="mini-stat-grid"><article class="mini-stat"><span>Total batches</span><strong id="batchCountStat">0</strong></article><article class="mini-stat"><span>Bird capacity</span><strong id="birdCountStat">0</strong></article><article class="mini-stat"><span>Average age</span><strong id="batchAgeStat">0 days</strong></article></div>
+          <article class="card-panel table-panel"><div class="card-head"><div><p class="eyebrow">Realtime Records</p><h3>All Batches</h3></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Batch ID</th><th>Date</th><th>Chicks</th><th>Age</th><th>Stage</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="batchTableBody"><tr><td colspan="7"><div class="table-empty"><i class="fa-solid fa-egg"></i><p>No batch records yet.</p></div></td></tr></tbody></table></div></article>
+        </section>
+
+        <section class="view" data-view="feeding">
+          <div class="section-head"><div><p class="eyebrow">Nutrition Control</p><h3>Feeding Management</h3></div><button class="primary-button" type="button" data-open-modal="feedingModal"><i class="fa-solid fa-plus"></i><span>Add Feed Log</span></button></div>
+          <div class="mini-stat-grid"><article class="mini-stat"><span>Feed logged today</span><strong id="feedTodayStat">0 kg</strong></article><article class="mini-stat"><span>Total schedules</span><strong id="feedScheduleStat">0</strong></article><article class="mini-stat"><span>Last feed type</span><strong id="feedTypeStat">--</strong></article></div>
+          <article class="card-panel table-panel"><div class="card-head"><div><p class="eyebrow">Daily Feed Log</p><h3>Schedules and Quantity Tracking</h3></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Scheduled For</th><th>Batch</th><th>Feed Type</th><th>Quantity</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="feedingTableBody"><tr><td colspan="6"><div class="table-empty"><i class="fa-solid fa-bowl-food"></i><p>No feeding schedules or logs yet.</p></div></td></tr></tbody></table></div></article>
+        </section>
+
+        <section class="view" data-view="health">
+          <div class="section-head"><div><p class="eyebrow">Welfare Tracking</p><h3>Health Monitoring</h3></div><button class="primary-button" type="button" data-open-modal="healthModal"><i class="fa-solid fa-plus"></i><span>Add Health Record</span></button></div>
+          <div class="mini-stat-grid"><article class="mini-stat"><span>Vaccinations tracked</span><strong id="vaccinationStat">0</strong></article><article class="mini-stat"><span>Mortality count</span><strong id="mortalityStat">0</strong></article><article class="mini-stat"><span>Next due</span><strong id="nextDueStat">--</strong></article></div>
+          <article class="card-panel table-panel"><div class="card-head"><div><p class="eyebrow">Clinical Log</p><h3>Vaccination, Disease, and Mortality Records</h3></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Batch</th><th>Type</th><th>Title</th><th>Affected</th><th>Next Due</th><th>Actions</th></tr></thead><tbody id="healthTableBody"><tr><td colspan="7"><div class="table-empty"><i class="fa-solid fa-heart-pulse"></i><p>No health records yet.</p></div></td></tr></tbody></table></div></article>
+        </section>
+
+        <section class="view" data-view="expenses">
+          <div class="section-head"><div><p class="eyebrow">Farm Finance</p><h3>Expense and Profit Tracker</h3></div><button class="primary-button" type="button" data-open-modal="expenseModal"><i class="fa-solid fa-plus"></i><span>Add Transaction</span></button></div>
+          <div class="finance-grid"><article class="finance-card"><span>Total Expenses</span><strong id="totalExpenseValue">Rs 0</strong></article><article class="finance-card finance-card--success"><span>Total Revenue</span><strong id="totalIncomeValue">Rs 0</strong></article><article class="finance-card" id="profitCard"><span>Profit / Loss</span><strong id="profitValue">Rs 0</strong></article></div>
+          <article class="card-panel table-panel"><div class="card-head"><div><p class="eyebrow">Ledger</p><h3>Expense and Income Records</h3></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Reference</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="expenseTableBody"><tr><td colspan="7"><div class="table-empty"><i class="fa-solid fa-wallet"></i><p>No transactions recorded yet.</p></div></td></tr></tbody></table></div></article>
+        </section>
+
+        <section class="view" data-view="settings">
+          <div class="section-head"><div><p class="eyebrow">Control Center</p><h3>Alert Thresholds and Automation Logic</h3></div></div>
+          <div class="settings-layout">
+            <article class="card-panel"><div class="card-head"><div><p class="eyebrow">Live Rules</p><h3>Sensor Threshold Settings</h3></div></div>
+              <form id="settingsForm" class="settings-form"><div class="form-grid">
+                <label class="field"><span>Temperature alert (C)</span><input id="tempThreshold" name="tempThreshold" type="number" min="20" max="60" step="0.1" required></label>
+                <label class="field"><span>Gas alert (ppm)</span><input id="gasThreshold" name="gasThreshold" type="number" min="100" max="5000" step="1" required></label>
+                <label class="field"><span>Water alert level</span><input id="waterThreshold" name="waterThreshold" type="number" min="0" max="1" step="0.01" required></label>
+                <label class="field"><span>Fan ON threshold (C)</span><input id="fanTempThreshold" name="fanTempThreshold" type="number" min="20" max="60" step="0.1" required></label>
+                <label class="field"><span>Darkness threshold (LDR)</span><input id="darkLdrThreshold" name="darkLdrThreshold" type="number" min="0" max="1" step="0.01" required></label>
+                <label class="field"><span>Pump ON threshold</span><input id="pumpWaterThreshold" name="pumpWaterThreshold" type="number" min="0" max="1" step="0.01" required></label>
+                <label class="field"><span>Alarm gas threshold (ppm)</span><input id="alarmGasThreshold" name="alarmGasThreshold" type="number" min="100" max="5000" step="1" required></label>
+                <label class="toggle-field"><input id="alertSoundEnabled" name="alertSoundEnabled" type="checkbox"><span>Enable alert sound after user interaction</span></label>
+              </div><div class="form-actions"><button type="submit" class="primary-button"><i class="fa-solid fa-floppy-disk"></i><span>Save Settings</span></button></div></form>
+            </article>
+            <article class="card-panel info-panel"><div class="card-head"><div><p class="eyebrow">Deployment Notes</p><h3>Backend Integration</h3></div></div><div class="info-list"><div class="info-row"><span>Live path</span><strong>/Poultry</strong></div><div class="info-row"><span>Management data</span><strong>/FarmManagement/*</strong></div><div class="info-row"><span>Realtime listener</span><strong><code>onValue()</code></strong></div><div class="info-row"><span>Connectivity</span><strong id="settingsConnectionLabel">Waiting</strong></div></div><div class="note-box"><i class="fa-solid fa-circle-info"></i><p>This site is deployment-ready for static hosting. Firebase configuration lives in <code>firebase.js</code>, and every management form writes to the Realtime Database.</p></div></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+  <div class="modal" id="batchModal" aria-hidden="true"><div class="modal-dialog"><div class="modal-header"><div><p class="eyebrow">Batch Record</p><h3 id="batchModalTitle">Add New Batch</h3></div><button class="icon-button modal-close" type="button" data-close-modal><i class="fa-solid fa-xmark"></i></button></div><form id="batchForm" class="modal-form"><input type="hidden" id="batchRecordId" name="recordId"><div class="form-grid"><label class="field"><span>Batch ID</span><input id="batchId" name="batchId" type="text" maxlength="30" required></label><label class="field"><span>Arrival date</span><input id="batchDate" name="date" type="date" required></label><label class="field"><span>Number of chicks</span><input id="batchCount" name="chicks" type="number" min="1" step="1" required></label><label class="field field--full"><span>Notes</span><textarea id="batchNotes" name="notes" rows="3" placeholder="Breed, supplier, or placement notes"></textarea></label></div><div class="form-actions"><button class="secondary-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save Batch</button></div></form></div></div>
+
+  <div class="modal" id="feedingModal" aria-hidden="true"><div class="modal-dialog"><div class="modal-header"><div><p class="eyebrow">Feed Log</p><h3 id="feedingModalTitle">Add Feeding Schedule</h3></div><button class="icon-button modal-close" type="button" data-close-modal><i class="fa-solid fa-xmark"></i></button></div><form id="feedingForm" class="modal-form"><input type="hidden" id="feedingRecordId" name="recordId"><div class="form-grid"><label class="field"><span>Batch</span><select id="feedBatchId" name="batchId" required></select></label><label class="field"><span>Scheduled for</span><input id="feedDateTime" name="scheduledAt" type="datetime-local" required></label><label class="field"><span>Feed type</span><select id="feedType" name="feedType" required><option value="Starter">Starter</option><option value="Grower">Grower</option><option value="Finisher">Finisher</option><option value="Layer">Layer</option></select></label><label class="field"><span>Quantity (kg)</span><input id="feedQuantity" name="quantityKg" type="number" min="0.1" step="0.1" required></label><label class="field field--full"><span>Notes</span><textarea id="feedNotes" name="notes" rows="3" placeholder="Consumption, stock, or schedule remarks"></textarea></label></div><div class="form-actions"><button class="secondary-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save Feed Log</button></div></form></div></div>
+
+  <div class="modal" id="healthModal" aria-hidden="true"><div class="modal-dialog"><div class="modal-header"><div><p class="eyebrow">Health Record</p><h3 id="healthModalTitle">Add Health Entry</h3></div><button class="icon-button modal-close" type="button" data-close-modal><i class="fa-solid fa-xmark"></i></button></div><form id="healthForm" class="modal-form"><input type="hidden" id="healthRecordId" name="recordId"><div class="form-grid"><label class="field"><span>Batch</span><select id="healthBatchId" name="batchId" required></select></label><label class="field"><span>Record type</span><select id="healthType" name="recordType" required><option value="Vaccination">Vaccination</option><option value="Disease">Disease</option><option value="Mortality">Mortality</option><option value="Checkup">Checkup</option></select></label><label class="field"><span>Title</span><input id="healthTitleInput" name="title" type="text" maxlength="80" required></label><label class="field"><span>Record date</span><input id="healthDate" name="date" type="date" required></label><label class="field"><span>Affected count</span><input id="healthAffected" name="affectedCount" type="number" min="0" step="1" required></label><label class="field"><span>Next due date</span><input id="healthNextDue" name="nextDueDate" type="date"></label><label class="field field--full"><span>Notes</span><textarea id="healthNotes" name="notes" rows="3" placeholder="Medicine, symptoms, or vaccine notes"></textarea></label></div><div class="form-actions"><button class="secondary-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save Health Record</button></div></form></div></div>
+
+  <div class="modal" id="expenseModal" aria-hidden="true"><div class="modal-dialog"><div class="modal-header"><div><p class="eyebrow">Finance Record</p><h3 id="expenseModalTitle">Add Transaction</h3></div><button class="icon-button modal-close" type="button" data-close-modal><i class="fa-solid fa-xmark"></i></button></div><form id="expenseForm" class="modal-form"><input type="hidden" id="expenseRecordId" name="recordId"><div class="form-grid"><label class="field"><span>Entry type</span><select id="expenseType" name="entryType" required><option value="Expense">Expense</option><option value="Income">Income</option></select></label><label class="field"><span>Category</span><select id="expenseCategory" name="category" required><option value="Feed">Feed</option><option value="Medicine">Medicine</option><option value="Electricity">Electricity</option><option value="Labor">Labor</option><option value="Maintenance">Maintenance</option><option value="Sale">Sale</option><option value="Other">Other</option></select></label><label class="field"><span>Date</span><input id="expenseDate" name="date" type="date" required></label><label class="field"><span>Amount</span><input id="expenseAmount" name="amount" type="number" min="0.01" step="0.01" required></label><label class="field"><span>Reference</span><input id="expenseReference" name="reference" type="text" maxlength="80" placeholder="Vendor, invoice, or sale note"></label><label class="field field--full"><span>Notes</span><textarea id="expenseNotes" name="notes" rows="3" placeholder="Transaction details"></textarea></label></div><div class="form-actions"><button class="secondary-button" type="button" data-close-modal>Cancel</button><button class="primary-button" type="submit">Save Transaction</button></div></form></div></div>
+
+  <div class="sr-only" aria-live="assertive" id="screenReaderAlerts"></div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
