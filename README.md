@@ -74,7 +74,6 @@ Displays real-time sensor values for debugging.
 
 ## 🛠️ Future Improvements
 - Mobile App (Flutter)
-- Web Dashboard
 - SMS/WhatsApp Alerts
 - AI-based prediction system
 
