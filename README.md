@@ -67,7 +67,7 @@ Displays real-time sensor values for debugging.
 ---
 
 ## 📸 Project Images
-![System](https://your-image-link.com/image.png)
+![System](https://github.com/AmeySecOps/crazy_poultry_model/blob/main/images/1pic.jpeg)
 
 ---
 
