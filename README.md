@@ -67,7 +67,7 @@ Displays real-time sensor values for debugging.
 ---
 
 ## 📸 Project Images
-(Add your images here)
+![System](https://your-image-link.com/image.png)
 
 ---
 
